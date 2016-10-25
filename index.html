@@ -37,24 +37,13 @@ understanding sine wave
 <head>
 	<title>ripple test</title>
 
-<style>
- 		@media  (min-device-width : 1010px) and (max-device-width : 1012px) {  /* miss asus*/
- 			
- 			#prompt { 
- 				overflow-y: auto;  text-align:center;
- 				margin: auto; display: block;
- 				margin-top:4em; padding:1em;
- 			}
- 		}
- 		
-		
+<style>	
 		#prompt {
 			margin: auto; display: block; 
+			text-align:center;
 			margin-top:4em; padding:1em;
-		}
-		
-		
- 	</style>
+		}	
+</style>
 
 
 <script> 
@@ -82,12 +71,6 @@ understanding sine wave
             line_width = 20,
             step = line_width * 2, 
             count = height / line_width;
-	    
-//set size attribute on miss as
-	var mq = window.matchMedia( "(min-device-width : 1010px) and (max-device-width : 1012px) )" );  //a  boolean
-	if(mq) {
-		$('prompt').size = '5';boo
-	}
 
 $('prompt').onchange = function(){
     this.style.display = 'none';  //works!        
@@ -279,7 +262,7 @@ $('prompt').onchange = function(){
 <body>
     <!-- the user is asked to select an image file -->
    <select id="prompt">
-        <option style = 'background:none;'>Select an image:</option>
+        <option >Select an image:</option>
         <option></option>
         <option style = 'color: blue; padding-bottom:.5em;' >pebbles.jpg</option>
         <option  style = 'color: blue; padding-bottom:.5em;'>who0.png </option>
