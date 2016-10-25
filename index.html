@@ -82,6 +82,12 @@ understanding sine wave
             line_width = 20,
             step = line_width * 2, 
             count = height / line_width;
+	    
+//set size attribute on miss as
+	var mq = window.matchMedia( "(min-device-width : 1010px) and (max-device-width : 1012px) )" );  //a  boolean
+	if(mq) {
+		$('prompt').size = '5';boo
+	}
 
 $('prompt').onchange = function(){
     this.style.display = 'none';  //works!        
