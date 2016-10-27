@@ -1,0 +1,211 @@
+<!-- 
+    zach server:
+    	http://127.0.0.1:5723/
+
+     * Water ripple effect.
+     * Original code (Java) by Neil Wallis 
+     * @link http://www.neilwallis.com/java/water.html
+     * 
+     * @author Sergey Chikuyonok (serge.che@gmail.com)
+     http://media.chikuyonok.ru/ripple/ripple.js
+     * @link http://chikuyonok.ru
+    joshua zz
+     	http://www.lab4games.net/zz85/blog/2010/03/10/rain-water-ripples-with-html-canvas-javascript-jquery/
+    tom hammersley:
+    	http://www.gamedev.net/page/resources/_/technical/graphics-programming-and-theory/water-r718
+    hugo elias
+    	http://freespace.virgin.net/hugo.elias/graphics/x_water.htm
+    greek help?
+     	http://users.softlab.ntua.gr/~ttsiod/wavePhysics.html
+     	http://users.softlab.ntua.gr/~ttsiod/games.html
+    refraction physics classroom broken pencil:
+    	http://www.physicsclassroom.com/class/refrn/Lesson-1/Refraction-and-Sight
+    understanding sine wave 
+    	http://betterexplained.com/articles/intuitive-understanding-of-sine-waves/
+-->
+
+<html>
+<head>
+	<title>ripples demo</title>
+    <script> 
+    //helper
+    $ = function(id){return document.getElementById(id)};
+    value = null; //global
+
+    window.onload = function(){  
+        var canvas = $('c'),
+            /** @type {CanvasRenderingContext2D} */
+            ctx = canvas.getContext('2d'),
+            width = 900,  // image width 900
+            height = 500, //500
+            half_width = width >> 1,  //200
+            half_height = height >> 1,  //200
+            size = width * (height + 2) * 2,
+            delay = 30,
+            oldind = width,  //index!
+            newind = width * (height + 3),
+            riprad = 3,  //ripple radius (radius of finger)
+            ripplemap = [],
+            last_map = [],
+            ripple,
+            texture;
+    
+        $('menu').onclick = function(e){
+            var id = e.target.id;
+            if(id == 'pebbles')
+                value =  'pebbles.jpg'; 
+            if(id == 'who')
+                value =  'who0.png'; 
+
+            this.style.display = 'none'; //its work is done!
+
+            var img = new Image();
+            img.onload = function() {
+              	width = img.naturalWidth; // this will be img's actual width
+            	height = img.naturalHeight; // this will be ...
+            	canvas.width = width;
+            	canvas.height =height
+                ctx.drawImage(img, 0, 0,width,height);
+            	texture = ctx.getImageData(0, 0, width, height);
+            	ripple = ctx.getImageData(0, 0, width, height);
+            };
+            img.src = 'images/' + value;
+        };
+       
+
+                //creates 2 arrays = height maps for ripples//here combined, so *2
+                for (var i = 0; i < size; i++) {  //size = width * (height + 2) * 2
+                    last_map[i] = ripplemap[i] = 0;  //start without disturbances
+                }
+                
+                /**
+                 * Main loop
+                 */
+                function run() {
+                    newframe();
+                    ctx.putImageData(ripple, 0, 0);
+                }
+                
+                /**
+                 * Disturb water at specified point
+                 each time there's s disturbance add 128 to radius:
+                 */
+                function disturb(dx, dy) {  //eg mouse x/y
+                    dx <<= 0;  //make point coord  into an integer
+                    dy <<= 0;
+                    2
+                    for (var j = dy - riprad; j < dy + riprad; j++) {
+                        for (var k = dx - riprad; k < dx + riprad; k++) {
+                            ripplemap[oldind + (j * width) + k] += 128;
+                        }
+                    }
+                }  //adds 128 to all points in 'old' ripplemap around dx/dy since oldind = index of start of old map
+
+                
+                /**
+                 * Generates new ripples
+                 */
+                function newframe() {
+                    var a, b, data, cur_pixel, new_pixel, old_data;
+
+                    //swap arrays
+                    var t = oldind; oldind = newind; newind = t;  //t=temporary
+
+                    
+                    
+                    // create local copies of variables to decrease
+                    // scope lookup time in Firefox
+                    var _width = width,
+                        _height = height,
+                        _ripplemap = ripplemap,
+                        _last_map = last_map,
+                        _rd = ripple.data,
+                        _td = texture.data,
+                        _half_width = half_width,
+                        _half_height = half_height;
+                    
+                    //populate new using old average
+                    var i = 0;  //index counter
+                    for (var y = 0; y < _height; y++) {
+                        for (var x = 0; x < _width; x++) {
+                            var 	_newind = newind + i, 
+                            		_mapind = oldind + i;
+                            data = (   //height at old
+                                _ripplemap[_mapind - _width] + 
+                                _ripplemap[_mapind + _width] + 
+                                _ripplemap[_mapind - 1] + 
+                                _ripplemap[_mapind + 1]) >> 1;  //divide by 2
+                                
+                           data -= _ripplemap[_newind];
+                          	data -= data >>5; //decay rate of disturbance: divide by 32  5,  9=wilder ride
+                         
+                            _ripplemap[_newind] = data;
+
+                            //where data=0 then still, where data>0 then wave
+                            data = 1024 - data;   //buffer has no data?
+                        
+                            old_data = _last_map[i];
+                            _last_map[i] = data;
+                            
+                            if (old_data != data) {
+                                //offsets a/b = X/Y
+                                a = (((x - _half_width) * data / 1024) << 0) + _half_width;
+                                b = (((y - _half_height) * data / 1024) << 0) + _half_height;
+                
+                                //bounds check
+                                if (a >= _width) a = _width - 1;
+                                if (a < 0) a = 0;
+                                if (b >= _height) b = _height - 1;
+                                if (b < 0) b = 0;
+                
+                                new_pixel = (a + (b * _width)) * 4;
+                                cur_pixel = i * 4;
+                                
+                                _rd[cur_pixel] = _td[new_pixel];
+                                _rd[cur_pixel + 1] = _td[new_pixel + 1];
+                                _rd[cur_pixel + 2] = _td[new_pixel + 2];
+                            }
+                            
+                            ++i;
+                        }
+                    }
+                }
+                
+                // canvas.onmousemove = function(/* Event */ evt) {
+                //     disturb(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY);
+                // };
+
+             	canvas.ontouchmove = function(event){
+             	event.preventDefault();
+             	disturb(event.touches[0].pageX, event.touches[0].pageY);
+                }
+             	
+
+               
+                
+                setInterval(run, delay);
+                
+                // // generate random ripples
+                // var rnd = Math.random;
+                // setInterval(function() {
+                //     disturb(rnd() * width, rnd() * height);
+                // }, 700);   
+            }
+    </script>
+</head>
+<body>
+    <!-- the user is asked to select an image file -->
+
+    <div id = 'menu' style = 'background:yellow; border: 1px solid red; color:blue; margin: auto; display: block; padding:1em; font-size: 13pt;  width:200px; text-align:center;' >
+
+        <p style = 'color:red; margin-bottom:.5em;'>Select an image:</p>
+
+        <p id = 'pebbles' style = ' margin-bottom: 0em;' >pebbles.jpg</p>
+
+        <p id='who'>who0.png</p>
+    </div>
+
+    <canvas id = 'c' width = '500' height = '500' style = "display: block; margin: 0 auto;"></canvas>
+
+</body>
+</html>
