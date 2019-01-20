@@ -1,4 +1,11 @@
 <!-- 
+	routing docs
+		https://mithril.js.org/archive/v0.2.5/routing.html
+	on route change event
+		https://github.com/MithrilJS/mithril.js/issues/755
+	ratfactor tut 1
+		http://ratfactor.com/mithril1/?/mordor
+
     zach server:
     	http://127.0.0.1:5723/
 
@@ -9,7 +16,8 @@
      * @author Sergey Chikuyonok (serge.che@gmail.com)
      http://media.chikuyonok.ru/ripple/ripple.js
      * @link http://chikuyonok.ru
-    joshua zz
+
+    joshua 
      	http://www.lab4games.net/zz85/blog/2010/03/10/rain-water-ripples-with-html-canvas-javascript-jquery/
     tom hammersley:
     	http://www.gamedev.net/page/resources/_/technical/graphics-programming-and-theory/water-r718
@@ -24,188 +32,304 @@
     	http://betterexplained.com/articles/intuitive-understanding-of-sine-waves/
 -->
 
+
 <html>
 <head>
-	<title>ripples demo</title>
-    <script> 
-    //helper
-    $ = function(id){return document.getElementById(id)};
-    value = null; //global
+	<title>m-ripples</title>
 
-    window.onload = function(){  
-        var canvas = $('c'),
-            /** @type {CanvasRenderingContext2D} */
-            ctx = canvas.getContext('2d'),
-            width = 900,  // image width 900
-            height = 500, //500
-            half_width = width >> 1,  //200
-            half_height = height >> 1,  //200
-            size = width * (height + 2) * 2,
-            delay = 30,
-            oldind = width,  //index!
-            newind = width * (height + 3),
-            riprad = 3,  //ripple radius (radius of finger)
-            ripplemap = [],
-            last_map = [],
-            ripple,
-            texture;
-    
-        $('menu').onclick = function(e){
-            var id = e.target.id;
-            if(id == 'pebbles')
-                value =  'pebbles.jpg'; 
-            if(id == 'who')
-                value =  'who0.png'; 
+	<style>
 
-            this.style.display = 'none'; //its work is done!
+		#footer {
+		   position:fixed;
+		   left:0px;
+		   bottom:0px;
+		   height:30px;
+		   width:100%;
+		   background:#999;
+		}
+		a#footer {
+			padding: 3px 0 3px 20px;}
 
-            var img = new Image();
-            img.onload = function() {
-              	width = img.naturalWidth; // this will be img's actual width
-            	height = img.naturalHeight; // this will be ...
-            	canvas.width = width;
-            	canvas.height =height
-                ctx.drawImage(img, 0, 0,width,height);
-            	texture = ctx.getImageData(0, 0, width, height);
-            	ripple = ctx.getImageData(0, 0, width, height);
-            };
-            img.src = 'images/' + value;
-        };
-       
+		}
+		body {
+			margin: 40px auto;
+			max-width: 770px;
+			font-family: sans-serif;
+			color: #222;
+			background: white;
+		}
 
-                //creates 2 arrays = height maps for ripples//here combined, so *2
-                for (var i = 0; i < size; i++) {  //size = width * (height + 2) * 2
-                    last_map[i] = ripplemap[i] = 0;  //start without disturbances
-                }
-                
-                /**
-                 * Main loop
-                 */
-                function run() {
-                    newframe();
-                    ctx.putImageData(ripple, 0, 0);
-                }
-                
-                /**
-                 * Disturb water at specified point
-                 each time there's s disturbance add 128 to radius:
-                 */
-                function disturb(dx, dy) {  //eg mouse x/y
-                    dx <<= 0;  //make point coord  into an integer
-                    dy <<= 0;
-                    2
-                    for (var j = dy - riprad; j < dy + riprad; j++) {
-                        for (var k = dx - riprad; k < dx + riprad; k++) {
-                            ripplemap[oldind + (j * width) + k] += 128;
-                        }
-                    }
-                }  //adds 128 to all points in 'old' ripplemap around dx/dy since oldind = index of start of old map
+		p {
+			font-size: 120%;
+			line-height: 1.2em;
+		}
 
-                
-                /**
-                 * Generates new ripples
-                 */
-                function newframe() {
-                    var a, b, data, cur_pixel, new_pixel, old_data;
+		
+		a { 
+			color:blue; 
+			text-decoration: none; 
+		}
 
-                    //swap arrays
-                    var t = oldind; oldind = newind; newind = t;  //t=temporary
+	    a:hover { text-decoration: underline; }
 
-                    
-                    
-                    // create local copies of variables to decrease
-                    // scope lookup time in Firefox
-                    var _width = width,
-                        _height = height,
-                        _ripplemap = ripplemap,
-                        _last_map = last_map,
-                        _rd = ripple.data,
-                        _td = texture.data,
-                        _half_width = half_width,
-                        _half_height = half_height;
-                    
-                    //populate new using old average
-                    var i = 0;  //index counter
-                    for (var y = 0; y < _height; y++) {
-                        for (var x = 0; x < _width; x++) {
-                            var 	_newind = newind + i, 
-                            		_mapind = oldind + i;
-                            data = (   //height at old
-                                _ripplemap[_mapind - _width] + 
-                                _ripplemap[_mapind + _width] + 
-                                _ripplemap[_mapind - 1] + 
-                                _ripplemap[_mapind + 1]) >> 1;  //divide by 2
-                                
-                           data -= _ripplemap[_newind];
-                          	data -= data >>5; //decay rate of disturbance: divide by 32  5,  9=wilder ride
-                         
-                            _ripplemap[_newind] = data;
+		canvas {
+			border: 1px solid blue;
+			margin: 0px auto;  /*top-bottom   right-left*  25px*/
+			/*margin-top: -20px;*/
+			display: block;
+			cursor: pointer;
+		}
+	
+	
+		.head {color:#00ff80;}
+		.item {color: skyblue;}
+		.item:hover { text-decoration: underline; }
+	</style>
 
-                            //where data=0 then still, where data>0 then wave
-                            data = 1024 - data;   //buffer has no data?
-                        
-                            old_data = _last_map[i];
-                            _last_map[i] = data;
-                            
-                            if (old_data != data) {
-                                //offsets a/b = X/Y
-                                a = (((x - _half_width) * data / 1024) << 0) + _half_width;
-                                b = (((y - _half_height) * data / 1024) << 0) + _half_height;
-                
-                                //bounds check
-                                if (a >= _width) a = _width - 1;
-                                if (a < 0) a = 0;
-                                if (b >= _height) b = _height - 1;
-                                if (b < 0) b = 0;
-                
-                                new_pixel = (a + (b * _width)) * 4;
-                                cur_pixel = i * 4;
-                                
-                                _rd[cur_pixel] = _td[new_pixel];
-                                _rd[cur_pixel + 1] = _td[new_pixel + 1];
-                                _rd[cur_pixel + 2] = _td[new_pixel + 2];
-                            }
-                            
-                            ++i;
-                        }
-                    }
-                }
-                
-                // canvas.onmousemove = function(/* Event */ evt) {
-                //     disturb(evt.offsetX || evt.layerX, evt.offsetY || evt.layerY);
-                // };
+	<script>
+    	/**
+    	 * Water ripple effect.
+    	 * Original code (Java) by Neil Wallis 
+    	 * @link http://www.neilwallis.com/java/water.html
+    	 * 
+    	 * @author Sergey Chikuyonok (serge.che@gmail.com)
+    	 * @link http://chikuyonok.ru
+    	 */
+    	function waterRipple(img) {
+    		if(interval) {
+    			clearInterval(interval);
+    			ctx.clearRect(0,0, canvas.width, canvas.height);
+    		}
+    		var width = img.naturalWidth, //img's actual width
+			 	height = img.naturalHeight;
+			canvas.width = width;
+			canvas.height =height;
+			ctx.drawImage(img, 0, 0, width, height);  //xxx
+ 
+    	    var half_width = width >> 1,
+    	        half_height = height >> 1,
+    	        size = width * (height + 2) * 2,
+    	        delay = 30,
+    	        oldind = width,
+    	        newind = width * (height + 3),
+    	        riprad = 3,
+    	        ripplemap = [],
+    	        last_map = [],
+    	        ripple,
+    	        texture,
+    	        line_width = 20,
+    	        step = line_width * 2, 
+    	        count = height / line_width;   
+    	    
+    	    texture = ctx.getImageData(0, 0, width, height);
+    	    ripple = ctx.getImageData(0, 0, width, height);
+    	    
+    	    for (var i = 0; i < size; i++) {
+    	        last_map[i] = ripplemap[i] = 0;
+    	    }
+    	    
+    	    /**
+    	     * Main loop
+    	     */
+    	    function run() {
+    	        newframe();
+    	        ctx.putImageData(ripple, 0, 0);
+    	    }
+    	    
+    	    /**
+    	     * Disturb water at specified point
+    	     */
+    	    function disturb(dx, dy) {
+    	        dx <<= 0;
+    	        dy <<= 0;
+    	        
+    	        for (var j = dy - riprad; j < dy + riprad; j++) {
+    	            for (var k = dx - riprad; k < dx + riprad; k++) {
+    	                ripplemap[oldind + (j * width) + k] += 128;
+    	            }
+    	        }
+    	    }
+    	    
+    	    /**
+    	     * Generates new ripples
+    	     */
+    	    function newframe() {
+    	        var a, b, data, cur_pixel, new_pixel, old_data;
+    	        
+    	        var t = oldind; oldind = newind; newind = t;
+    	        var i = 0;
+    	        
+    	        // create local copies of variables to decrease
+    	        // scope lookup time in Firefox
+    	        var _width = width,
+    	            _height = height,
+    	            _ripplemap = ripplemap,
+    	            _last_map = last_map,
+    	            _rd = ripple.data,
+    	            _td = texture.data,
+    	            _half_width = half_width,
+    	            _half_height = half_height;
+    	        
+    	        for (var y = 0; y < _height; y++) {
+    	            for (var x = 0; x < _width; x++) {
+    	                var _newind = newind + i, _mapind = oldind + i;
+    	                data = (
+    	                    _ripplemap[_mapind - _width] + 
+    	                    _ripplemap[_mapind + _width] + 
+    	                    _ripplemap[_mapind - 1] + 
+    	                    _ripplemap[_mapind + 1]) >> 1;
+    	                    
+    	                data -= _ripplemap[_newind];
+    	                data -= data >> 5;
+    	                
+    	                _ripplemap[_newind] = data;
 
-             	canvas.ontouchmove = function(event){
-             	event.preventDefault();
-             	disturb(event.touches[0].pageX, event.touches[0].pageY);
-                }
-             	
+    	                //where data=0 then still, where data>0 then wave
+    	                data = 1024 - data;
+    	                
+    	                old_data = _last_map[i];
+    	                _last_map[i] = data;
+    	                
+    	                if (old_data != data) {
+    	                    //offsets
+    	                    a = (((x - _half_width) * data / 1024) << 0) + _half_width;
+    	                    b = (((y - _half_height) * data / 1024) << 0) + _half_height;
+    	    
+    	                    //bounds check
+    	                    if (a >= _width) a = _width - 1;
+    	                    if (a < 0) a = 0;
+    	                    if (b >= _height) b = _height - 1;
+    	                    if (b < 0) b = 0;
+    	    
+    	                    new_pixel = (a + (b * _width)) * 4;
+    	                    cur_pixel = i * 4;
+    	                    
+    	                    _rd[cur_pixel] = _td[new_pixel];
+    	                    _rd[cur_pixel + 1] = _td[new_pixel + 1];
+    	                    _rd[cur_pixel + 2] = _td[new_pixel + 2];
+    	                }
+    	                
+    	                ++i;
+    	            }
+    	        }
+    	    }
 
-               
-                
-                setInterval(run, delay);
-                
-                // // generate random ripples
-                // var rnd = Math.random;
-                // setInterval(function() {
-                //     disturb(rnd() * width, rnd() * height);
-                // }, 700);   
-            }
-    </script>
+    	    canvas.addEventListener('touchmove', ontouchmove, false);
+            canvas.addEventListener('mousemove', onmousemove, false);
+
+	       function ontouchmove(e){
+               if(e.touches.length == 1) {
+            	    e.preventDefault(); 
+                    var touch = e.touches[0], // Get info for finger #1
+                       touchX = touch.pageX-touch.target.offsetLeft,
+                       touchY=touch.pageY-touch.target.offsetTop;
+            	    disturb( touchX, touchY );
+               }
+           }
+
+    	   function onmousemove(e) {
+    	        disturb(e.offsetX || e.layerX, e.offsetY || e.layerY);
+    	    };
+
+    	    setInterval(run, delay);
+    	    
+    	    // generate random ripples
+    	    var rnd = Math.random;
+    	    interval = setInterval(function() {
+    	        disturb(rnd() * width, rnd() * height);
+    	    }, 700);
+    	};
+	</script>
 </head>
+
+
 <body>
-    <!-- the user is asked to select an image file -->
 
-    <div id = 'menu' style = 'background:yellow; border: 1px solid red; color:blue; margin: auto; display: block; padding:1em; font-size: 13pt;  width:200px; text-align:center;' >
+	<div id = 'demodiv' style = 'margin-top: 1em;'></div> 
 
-        <p style = 'color:red; margin-bottom:.5em;'>Select an image:</p>
+	<script src="mithril-0.2.5.min.js"> 
+	</script>
 
-        <p id = 'pebbles' style = ' margin-bottom: 0em;' >pebbles.jpg</p>
+	<script>
 
-        <p id='who'>who0.png</p>
-    </div>
+		var $ = function(id){return document.getElementById(id)};
 
-    <canvas id = 'c' width = '500' height = '500' style = "display: block; margin: 0 auto;"></canvas>
+		var pebbles, who, canvas, ctx, interval; //to stop animation
+		var dict = {pebbles: 'images/pebbles2.jpg', who: '/images/who0.png'};
+
+	    //menu component
+		var Menu = {
+
+			newimg: false,
+
+			view: () => 
+				m('div#menu', {
+					style: {border: '1px solid red',
+			 				textAlign: 'center',
+			 				background: 'blue',
+			 				marginTop: '6em'
+						},
+					onclick: function(e){
+						Menu.newimg = dict[e.target.textContent];
+						console.log('new image = ' + Menu.newimg);
+						m.route("/goto"); //go to canvas route 
+					}}, [
+						m('p.head', 'SELECT AN IMAGE:'),
+						m('p.item', 'pebbles'),
+						m('p.item', 'who'),	
+				])
+		}
+
+		//image component
+		var Goto = { 
+			view: () =>
+	 			m('div', [
+	 				m('canvas', {
+	 					width:'50', height: '50',
+						style: {border: '1px solid red'},
+						config: canvasinit	
+					}), 
+					m("a#footer", {
+						href: "/menu", 
+						config: m.route,
+						onclick: function(){
+							clearInterval(interval);
+							ctx.clearRect(0,0,canvas.width, canvas.height);
+
+							return true;
+						}},
+						"return to menu"
+					)
+				])
+		}
+
+		//render with routing for two components and /menu = default route
+		m.route($('demodiv'), "/menu", {   //document.body
+			"/menu": Menu,
+			"/goto": Goto
+		})
+
+		////////////////helpers and hideaways://///////////////////////
+			function canvasinit(element,isinit){
+				if(!isinit){
+					canvas = element;
+					ctx = element.getContext("2d");
+				}
+	
+				if(Menu.newimg){
+					switcher();
+					Menu.newimg = false;
+				}
+			}
+			function  switcher(){  //using leo's let app decide method
+
+	            var img = new Image()
+	            img.onload = function() {
+	                waterRipple(img); 	
+	            }
+	            img.src = Menu.newimg;
+	        };
+	</script>
 
 </body>
 </html>
