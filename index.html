@@ -1,35 +1,50 @@
 <!-- 
-	routing docs
-		https://mithril.js.org/archive/v0.2.5/routing.html
-	on route change event
-		https://github.com/MithrilJS/mithril.js/issues/755
-	ratfactor tut 1
-		http://ratfactor.com/mithril1/?/mordor
+    using unicode in text via javascript's string from char code method:
+        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/fromCharCode
 
-    zach server:
-    	http://127.0.0.1:5723/
+    nice markdown editor for github:
+        https://jbt.github.io/markdown-editor/#U1bwSy1XcMlPLs1NzSsBAA==
+ 
+     styling input type file - lady cailin
+         https://stackoverflow.com/questions/12035400/how-can-i-remove-the-no-file-chosen-tooltip-from-a-file-input-in-chrome
+    routing docs
+        https://mithril.js.org/archive/v0.2.5/routing.html
 
-     * Water ripple effect.
-     * Original code (Java) by Neil Wallis 
-     * @link http://www.neilwallis.com/java/water.html
-     * 
-     * @author Sergey Chikuyonok (serge.che@gmail.com)
-     http://media.chikuyonok.ru/ripple/ripple.js
-     * @link http://chikuyonok.ru
+    the route change event is called 'window.onpopstate'
+         (haha! see my code below. The part of the url that starts with ? is called 'window.location.search' since we're using search rather than hash routing)
 
-    joshua 
-     	http://www.lab4games.net/zz85/blog/2010/03/10/rain-water-ripples-with-html-canvas-javascript-jquery/
-    tom hammersley:
-    	http://www.gamedev.net/page/resources/_/technical/graphics-programming-and-theory/water-r718
-    hugo elias
-    	http://freespace.virgin.net/hugo.elias/graphics/x_water.htm
-    greek help?
-     	http://users.softlab.ntua.gr/~ttsiod/wavePhysics.html
-     	http://users.softlab.ntua.gr/~ttsiod/games.html
-    refraction physics classroom broken pencil:
-    	http://www.physicsclassroom.com/class/refrn/Lesson-1/Refraction-and-Sight
-    understanding sine wave 
-    	http://betterexplained.com/articles/intuitive-understanding-of-sine-waves/
+        https://github.com/MithrilJS/mithril.js/issues/755
+     
+     make a go back button like  browser 'back' button
+         https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_next_prev
+
+    ratfactor tut 
+        http://ratfactor.com/mithril1/?/mordor
+
+     zach server:
+        http://127.0.0.1:5723/
+
+      * Water ripple effect.
+      * Original code (Java) by Neil Wallis 
+      * @link http://www.neilwallis.com/java/water.html
+      * 
+      * @author Sergey Chikuyonok (serge.che@gmail.com)
+      http://media.chikuyonok.ru/ripple/ripple.js
+      * @link http://chikuyonok.ru
+
+     joshua 
+        http://www.lab4games.net/zz85/blog/2010/03/10/rain-water-ripples-with-html-canvas-javascript-jquery/
+     tom hammersley:
+        http://www.gamedev.net/page/resources/_/technical/graphics-programming-and-theory/water-r718
+     hugo elias
+        http://freespace.virgin.net/hugo.elias/graphics/x_water.htm
+     greek help?
+        http://users.softlab.ntua.gr/~ttsiod/wavePhysics.html
+        http://users.softlab.ntua.gr/~ttsiod/games.html
+     refraction physics classroom broken pencil:
+        http://www.physicsclassroom.com/class/refrn/Lesson-1/Refraction-and-Sight
+     understanding sine wave 
+        http://betterexplained.com/articles/intuitive-understanding-of-sine-waves/
 -->
 
 
@@ -37,20 +52,9 @@
 <head>
 	<title>m-ripples</title>
 
+    <meta charset=utf-8 />
+
 	<style>
-
-		#footer {
-		   position:fixed;
-		   left:0px;
-		   bottom:0px;
-		   height:30px;
-		   width:100%;
-		   background:#999;
-		}
-		a#footer {
-			padding: 3px 0 3px 20px;}
-
-		}
 		body {
 			margin: 40px auto;
 			max-width: 770px;
@@ -74,16 +78,54 @@
 
 		canvas {
 			border: 1px solid blue;
-			margin: 0px auto;  /*top-bottom   right-left*  25px*/
-			/*margin-top: -20px;*/
+			margin: 0px auto;  
 			display: block;
 			cursor: pointer;
 		}
+
+        #footer {
+           position:fixed;
+           left:0px;
+           bottom:0px;
+           height:30px;
+           width:30%;  /*100*/
+           /*background:#999;*/
+           color: black;
+        }
+        a#footer {
+            padding: 3px 0 3px 20px;
+        }
+       
+        a#footer:hover {
+            color: blue;
+            text-decoration: none;
+        }
+        a.info {
+            color: skyblue;
+            position: absolute;
+            top: 7px;
+            right: 20px;
+            font-size: 12pt;   
+        }
 	
-	
+	   .spacer {margin-left:9em;} /*11*/
 		.head {color:#00ff80;}
+        .head1 {color: blue;}
 		.item {color: skyblue;}
 		.item:hover { text-decoration: underline; }
+        
+        /*extras*/
+        .menu {
+            position:relative;
+            border: 1px solid red;
+            text-align: center;
+            background: blue;
+           /* marginTop: 6em;*/
+            padding: 3em
+        }
+        .top {margin-top: 6em;}
+
+        /*bbb*/
 	</style>
 
 	<script>
@@ -96,14 +138,16 @@
     	 * @link http://chikuyonok.ru
     	 */
     	function waterRipple(img) {
-    		if(interval) {
+    		//if(interval) {
     			clearInterval(interval);
     			ctx.clearRect(0,0, canvas.width, canvas.height);
-    		}
+    		//}
+
     		var width = img.naturalWidth, //img's actual width
 			 	height = img.naturalHeight;
 			canvas.width = width;
 			canvas.height =height;
+
 			ctx.drawImage(img, 0, 0, width, height);  //xxx
  
     	    var half_width = width >> 1,
@@ -231,13 +275,13 @@
     	        disturb(e.offsetX || e.layerX, e.offsetY || e.layerY);
     	    };
 
-    	    setInterval(run, delay);
+    	   interval =  setInterval(run, delay);
     	    
     	    // generate random ripples
-    	    var rnd = Math.random;
-    	    interval = setInterval(function() {
-    	        disturb(rnd() * width, rnd() * height);
-    	    }, 700);
+        	//     var rnd = Math.random;
+        	//     interval = setInterval(function() {
+        	//         disturb(rnd() * width, rnd() * height);
+        	//     }, 700);
     	};
 	</script>
 </head>
@@ -247,89 +291,166 @@
 
 	<div id = 'demodiv' style = 'margin-top: 1em;'></div> 
 
-	<script src="mithril-0.2.5.min.js"> 
-	</script>
+	<script src="mithril-0.2.5.min.js"> </script>
 
 	<script>
 
 		var $ = function(id){return document.getElementById(id)};
 
-		var pebbles, who, canvas, ctx, interval; //to stop animation
+		var pebbles, who, canvas, ctx, 
+            interval; //to stop animation
 		var dict = {pebbles: 'images/pebbles2.jpg', who: 'images/who0.png'};
+        var newimg = false;  //for storing newly selected image data
 
-	    //menu component
-		var Menu = {
+        //the apps's Menu component consists of two 'modules' or sub-components:
 
-			newimg: false,
+	    //choose an image from a list
+		var ChooseList = {
+			view: function(){   //or view helper function view_basicmenu
+                return m('div.menu.top', 
+                    {  //attributes
+    					onclick: function(e){                
+                            newimg = dict[e.target.textContent];
+                            console.log('new image = ' + newimg);
+                            m.route("/goto"); //go to canvas   
+                        }
+                    },  
+                    [   //children 
+                        m('a.info[title=link to Ripples README]', 
+                            {href: 'https://github.com/whoshere/ripples/blob/master/README.md#ripples'
+                            },
+                            'about'
+                        ),
 
-			view: () => 
-				m('div#menu', {
-					style: {border: '1px solid red',
-			 				textAlign: 'center',
-			 				background: 'blue',
-			 				marginTop: '6em'
-						},
-					onclick: function(e){
-						Menu.newimg = dict[e.target.textContent];
-						console.log('new image = ' + Menu.newimg);
-						m.route("/goto"); //go to canvas route 
-					}}, [
-						m('p.head', 'SELECT AN IMAGE:'),
-						m('p.item', 'pebbles'),
-						m('p.item', 'who'),	
-				])
-		}
 
-		//image component
-		var Goto = { 
-			view: () =>
-	 			m('div', [
-	 				m('canvas', {
-	 					width:'50', height: '50',
-						style: {border: '1px solid red'},
-						config: canvasinit	
-					}), 
-					m("a#footer", {
-						href: "/menu", 
-						config: m.route,
-						onclick: function(){
-							clearInterval(interval);
-							ctx.clearRect(0,0,canvas.width, canvas.height);
+                         
+    					m('p.head', 'SELECT AN IMAGE:'),
+    					m('p.item', 'pebbles'),
+    					m('p.item', 'who'),
+                        m('br'), m('br')
+                    ]
+                ) //end return subdiv
+            } 
+        }  
+        //or choose an image from your own local hard drive
+        var ChooseOwn= { 
+            view: function(){  //or helper function view_chooseit
+                return m('div.menu', 
+                    [  //children
+                        m('input[type=file]#chooser', 
+                            { //attr
+                                style: {display: 'none'},
+                                onchange: chooserinit
+                            }   
+                        ),
+                          
+                        m('button',  
+                             //attr
+                                {onclick: function(){
+                                    chooser.click(); //no need to get by id
+                                }
+                            }, "Choose your own"
+                        )
+                    ]
+                )
+            }            
+        }
 
-							return true;
-						}},
-						"return to menu"
-					)
-				])
-		}
+        //the app's MENU compoment permits both options:
+        var Menu = {
+            view: function(){
+                return  m('div', [
+                    m.component(ChooseList),
+                    m.component(ChooseOwn),
+                ])
+            }
+        }
 
-		//render with routing for two components and /menu = default route
-		m.route($('demodiv'), "/menu", {   //document.body
-			"/menu": Menu,
-			"/goto": Goto
-		})
+        //for testing the (sub) components:
+        // m.mount($('demodiv'), Menu);
 
-		////////////////helpers and hideaways://///////////////////////
-			function canvasinit(element,isinit){
-				if(!isinit){
-					canvas = element;
-					ctx = element.getContext("2d");
-				}
-	
-				if(Menu.newimg){
-					switcher();
-					Menu.newimg = false;
-				}
-			}
-			function  switcher(){  //using leo's let app decide method
+        //the app's main component, called Goto, consists of a canvas and the classic ripples filter:
+        
+        var Goto = { 
+            view: function(){
+                return m('div', 
+                    [ //children
 
-	            var img = new Image()
-	            img.onload = function() {
-	                waterRipple(img); 	
-	            }
-	            img.src = Menu.newimg;
-	        };
-	</script>
+                    m('canvas', {  //attri
+                        width:'50', height: '50',
+                        style: {border: '1px solid red'},
+                        config: canvasinit  
+                    }), 
 
+                    m("a#footer[title=return to menu]", //a hyperlink to the menu
+                        { //attr
+
+                        href: "/menu",  //destination
+                        config: m.route,
+                        onclick: function(){
+                            clearInterval(interval);
+                            ctx.clearRect(0,0,canvas.width, canvas.height);
+                            
+                            return true;  //execute before going
+                        }},  //end attributes
+
+                        String.fromCharCode(0x2190)  //left arrow unicode
+                    )
+                ])
+            }
+        }
+
+        //now we render with a 'routing map' rather than by calling m.mount
+        //notice /menu is the default route, were the app starts
+
+        m.route($('demodiv'), "/menu", {   //document.body
+            "/menu": Menu,
+            "/goto": Goto
+        })
+
+        
+        
+    //helper functions and hide-aways:
+        function canvasinit(element,isinit){
+            if(!isinit){
+                canvas = element;
+                ctx = element.getContext("2d");
+            }
+
+            if(newimg){
+                switcher();
+                newimg = false;
+            }
+        }
+
+        function chooserinit(e){
+            var file = e.target.files[0]; // 1 file selected
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var uri = e.target.result; //long!
+                newimg = uri;  
+                m.route("/goto");    
+            };
+            // Read  the image file as a data URL.
+            reader.readAsDataURL(file);
+        }  
+
+        function  switcher(){  //using leo's let app decide method
+            var img = new Image()
+            img.onload = function() {
+                waterRipple(img);   
+            }
+            img.src = newimg;
+        };
+
+        window.onpopstate = function(e){  //if returns using browser
+
+            console.log(window.location.search); //?/menu 
+
+            if(window.location.search == '?/menu'){
+                 m.route("/menu");
+            }
+        }
+      
+</script>
 </body>
-</html>
